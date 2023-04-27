@@ -27,7 +27,7 @@ var (
 
 
 func GenerateED25519Key() (ed25519.PublicKey, ed25519.PrivateKey, error){
-	PublicKey,PrivateKey, err := ed25519.GenerateKey(R.Reader) 
+	PublicKey,PrivateKey, err := ed25519.GenerateKey(R.rand.Reader) 
 	fmt.Println(err)
 	return PublicKey, PrivateKey, err
 
@@ -49,7 +49,7 @@ func Encrypt(password, data []byte) ([]byte, error) {
         return nil, err
     }
     nonce := make([]byte, gcm.NonceSize())
-    if _, err = R.rand.Read(nonce); err != nil {
+    if _, err = R.Read(nonce); err != nil {
         return nil, err
     }
     ciphertext := gcm.Seal(nonce, nonce, data, nil)
@@ -81,7 +81,7 @@ func Decrypt(password, data []byte) (string, error) {
 func DeriveKey(password, salt []byte) ([]byte, []byte, error) {
     if salt == nil {
         salt = make([]byte, 32)
-        if _, err := R.rand.Read(salt); err != nil {
+        if _, err := R.Read(salt); err != nil {
             return nil, nil, err
         }
     }
