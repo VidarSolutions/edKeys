@@ -83,7 +83,7 @@ func Decrypt(password, data []byte) (string, error) {
 func DeriveKey(password, salt []byte) ([]byte, []byte, error) {
     if salt == nil {
         salt = make([]byte, 32)
- 		if _, err = io.ReadFull(rand.Reader, salt); err != nil {
+ 		if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		panic(err)
 	}
     }
