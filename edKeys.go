@@ -5,8 +5,10 @@ import(
     "crypto/cipher"
 	"crypto/x509"
 	"crypto/ed25519"
+	"crypto/rand"
     "encoding/pem"
 	"fmt"
+	"io"
 	"io/ioutil"
 R	"math/rand"
 	"path/filepath"
@@ -27,7 +29,7 @@ var (
 
 
 func GenerateED25519Key() (ed25519.PublicKey, ed25519.PrivateKey, error){
-	PublicKey,PrivateKey, err := ed25519.GenerateKey(R.rand.Reader) 
+	PublicKey,PrivateKey, err := ed25519.GenerateKey(rand.Reader) 
 	fmt.Println(err)
 	return PublicKey, PrivateKey, err
 
@@ -49,9 +51,9 @@ func Encrypt(password, data []byte) ([]byte, error) {
         return nil, err
     }
     nonce := make([]byte, gcm.NonceSize())
-    if _, err = R.Read(nonce); err != nil {
-        return nil, err
-    }
+    if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		panic(err)
+	}
     ciphertext := gcm.Seal(nonce, nonce, data, nil)
     ciphertext = append(ciphertext, salt...)
     return ciphertext, nil
@@ -81,9 +83,9 @@ func Decrypt(password, data []byte) (string, error) {
 func DeriveKey(password, salt []byte) ([]byte, []byte, error) {
     if salt == nil {
         salt = make([]byte, 32)
-        if _, err := R.Read(salt); err != nil {
-            return nil, nil, err
-        }
+ 		if _, err = io.ReadFull(rand.Reader, salt); err != nil {
+		panic(err)
+	}
     }
     key, err := scrypt.Key(password, salt, 1048576, 8, 1, 32)
     if err != nil {
